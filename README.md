@@ -13,3 +13,14 @@ abaixo exemplo de uso que pode ser encontrado em src/main.rs
     let mut gfx = graphics::build(screen_width, screen_height, bpp, size);
     gfx.run(&mut maze);
 ```
+
+# Build
+
+``` sh
+Cargo build
+```
+
+# Run
+``` sh
+Cargo run
+```
