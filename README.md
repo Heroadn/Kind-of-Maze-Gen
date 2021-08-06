@@ -1,5 +1,5 @@
 # Kind-of-Maze-gen
-abaixo exemplo de uso que pode ser encontrado em src/main.rs
+Abaixo exemplo de uso que pode ser encontrado em src/main.rs
 
 ``` sh
     const WIDTH: u32 = 40;
