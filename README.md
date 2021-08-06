@@ -1,4 +1,7 @@
 # Kind-of-Maze-gen
+
+![rust](https://user-images.githubusercontent.com/36571620/128580141-60ab409f-eb81-475c-aae0-7f848fb797fb.png)
+
 Abaixo exemplo de uso que pode ser encontrado em src/main.rs
 
 ``` sh
