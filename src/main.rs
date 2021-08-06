@@ -1,4 +1,5 @@
 #![forbid(unsafe_code)]
+#![feature(static_nobundle)]
 mod generator;
 
 use generator::{Coordinate, Maze};
@@ -49,10 +50,10 @@ fn main() {
     //maze
     const WIDTH: u32 = 40;
     const HEIGHT: u32 = 40;
-    let size: u32 = 8;
 
     let start = Coordinate { x: 0, y: 1 };
     let mut maze: Maze = generator::build(WIDTH as i32, HEIGHT as i32, start);
+    let size: u32 = 8;
 
     //graphics
     let screen_width: u32 = 40 * size;

@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 use rand::seq::SliceRandom;
 
 impl Default for Node {
@@ -54,6 +56,11 @@ pub fn build(width: i32, height: i32, start: Coordinate) -> Maze {
     let index = start.x + (start.y * maze.width);
     maze.grid[index as usize].visited = true;
     maze.stack.push(start);
+
+    //if the starting point is a block open it
+    if let Type::Cell = maze.grid[index as usize].elem_type {
+        maze.grid[index as usize].elem_type = Type::Block(false);
+    };
 
     //put cells and blocks
     Maze::fill_grid(maze.width, maze.height, &mut maze.grid);
@@ -127,6 +134,7 @@ impl Maze {
         }
     }
     /// generate all the maze
+    #[allow(dead_code)]
     pub fn generate_full(&mut self) {
         while self.stack.len() > 0 {
             Maze::generate_step(self);
