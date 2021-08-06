@@ -2,16 +2,18 @@
 abaixo exemplo de uso que pode ser encontrado em src/main.rs
 
 ``` sh
-    const WIDTH: i32 = 60;
-    const HEIGHT: i32 = 60;
-
+    const WIDTH: u32 = 40;
+    const HEIGHT: u32 = 40;
+    
+    //where it should start generating 
     let start = Coordinate { x: 0, y: 1 };
-    let mut maze = generator::build(WIDTH, HEIGHT, start);
-
-    //graphics
-    let (screen_width, screen_height, bpp, size) = (800 / 2, 600 / 2, 32, 4);
-    let mut gfx = graphics::build(screen_width, screen_height, bpp, size);
-    gfx.run(&mut maze);
+    let mut maze: Maze = generator::build(WIDTH as i32, HEIGHT as i32, start);
+    
+    //generates part of the maze, can be used to see the algorithm working
+    maze.generate_step();
+    
+    //generates all the maze
+    maze.generate_full();
 ```
 
 # Build
