@@ -29,13 +29,11 @@ pub struct Node {
 }
 
 pub struct Maze {
-    grid: Vec<Node>,
     stack: Vec<Coordinate>,
+    pub grid: Vec<Node>,
     //width and height of the grid, and path
     pub width: i32,
     pub height: i32,
-    ///It's a representation of the grid i8
-    pub path: Vec<i8>,
     ///tell where he is in the generation process
     pub cursor: Coordinate,
     //Where to start the generation
@@ -46,7 +44,6 @@ pub fn build(width: i32, height: i32, start: Coordinate) -> Maze {
     let mut maze = Maze {
         grid: vec![Default::default(); (width * height) as usize],
         stack: Vec::new(),
-        path: vec![Default::default(); (width * height) as usize],
         width: width,
         height: height,
         cursor: start,
@@ -95,7 +92,6 @@ impl Maze {
         return choices;
     }
 
-    ///
     fn remove_wall(source: Node, target: &mut Node) {
         if let Type::Cell = source.elem_type {
             match target.elem_type {
@@ -105,49 +101,16 @@ impl Maze {
         }
     }
 
-    pub fn update_path(&mut self) {
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let index = x + (y * self.width);
-                let (path, wall) = (1, 0);
-
-                match self.grid[index as usize].elem_type {
-                    Type::Cell => self.path[index as usize] = path,
-                    Type::Block(is_open) => {
-                        if is_open {
-                            self.path[index as usize] = wall;
-                        } else {
-                            self.path[index as usize] = path;
-                        }
-                    }
+    pub fn is_open(&self, index: usize) -> bool {
+        match self.grid[index as usize].elem_type {
+            Type::Cell => return true,
+            Type::Block(is_open) => {
+                if is_open {
+                    return false;
+                } else {
+                    return true;
                 }
             }
-        }
-    }
-
-    ///
-    pub fn print_grid(&self) {
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let index = x + (y * self.width);
-                let (path, wall) = (" ", "#");
-
-                if self.start.x == x && self.start.y == y {
-                    print!("x");
-                }
-
-                match self.grid[index as usize].elem_type {
-                    Type::Cell => print!("{}", path),
-                    Type::Block(is_open) => {
-                        if is_open {
-                            print!("{}", wall)
-                        } else {
-                            print!("{}", path)
-                        }
-                    }
-                }
-            }
-            println!("");
         }
     }
 

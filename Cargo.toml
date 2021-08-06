@@ -7,4 +7,9 @@ edition = "2018"
 
 [dependencies]
 rand = "0.8.4"
+pixels = "0.5.0"
+winit = "0.25"
+winit_input_helper = "0.10"
+env_logger = "0.9"
+log = "0.4"
 sdl = { git = "https://github.com/brson/rust-sdl"}

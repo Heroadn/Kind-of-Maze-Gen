@@ -1,36 +1,116 @@
+#![forbid(unsafe_code)]
 mod generator;
-mod graphics;
 
 use generator::{Coordinate, Maze};
-use graphics::Pipeline;
+use log::error;
+use pixels::{Pixels, SurfaceTexture};
+use winit::dpi::LogicalSize;
+use winit::event::{Event, VirtualKeyCode};
+use winit::event_loop::{ControlFlow, EventLoop};
+use winit::window::WindowBuilder;
+use winit_input_helper::WinitInputHelper;
 
-impl Pipeline for Maze {
-    fn init(&mut self) {
+fn draw_square(
+    pos_x: i32,
+    pos_y: i32,
+    size: i32,
+    screen_width: i32,
+    rgba: &[u8],
+    frame: &mut [u8],
+) {
+    for x in 0..size {
+        for y in 0..size {
+            let i = ((x + pos_x) + (y + pos_y) * screen_width) as usize;
+            let frame_i = i * 4;
+            frame[frame_i] = rgba[0]; // R
+            frame[frame_i + 1] = rgba[1]; // G
+            frame[frame_i + 2] = rgba[2]; // B
+            frame[frame_i + 3] = rgba[3]; // A
+        }
     }
-    fn update(&mut self) {
-        self.generate_step();
-        self.update_path();
-    }
-    fn draw(&mut self, gfx: &graphics::Gfx) {
-        gfx.draw_pixel_arr(&self.path, self.width as i16, self.height as i16);
-    }
-    fn quit(&self) {
+}
+
+fn draw(size: i32, screen_width: i32, maze: &Maze, frame: &mut [u8]) {
+    for x in 0..maze.width {
+        for y in 0..maze.height {
+            let index = x + y * maze.width;
+            let rgba = if maze.is_open(index as usize) {
+                [0x00, 0x00, 0x00, 0xff]
+            } else {
+                [0xff, 0xff, 0xff, 0xff]
+            };
+
+            draw_square(x * size, y * size, size, screen_width, &rgba, frame);
+        }
     }
 }
 
 fn main() {
     //maze
-    const WIDTH: i32 = 60;
-    const HEIGHT: i32 = 60;
+    const WIDTH: u32 = 40;
+    const HEIGHT: u32 = 40;
+    let size: u32 = 8;
 
     let start = Coordinate { x: 0, y: 1 };
-    let mut maze = generator::build(WIDTH, HEIGHT, start);
+    let mut maze: Maze = generator::build(WIDTH as i32, HEIGHT as i32, start);
 
     //graphics
-    let (screen_width, screen_height, bpp, size) = (800 / 2, 600 / 2, 32, 4);
-    let mut gfx = graphics::build(screen_width, screen_height, bpp, size);
-    gfx.run(&mut maze);
+    let screen_width: u32 = 40 * size;
+    let screen_height: u32 = 40 * size;
 
-    //maze.generate_full();
-    //maze.print_grid();
+    //loop
+    env_logger::init();
+    let event_loop = EventLoop::new();
+    let mut input = WinitInputHelper::new();
+    let window = {
+        let size = LogicalSize::new(screen_width as f64, screen_height as f64);
+        WindowBuilder::new()
+            .with_title("Maze")
+            .with_inner_size(size)
+            .with_min_inner_size(size)
+            .build(&event_loop)
+            .unwrap()
+    };
+
+    let mut pixels = {
+        let window_size = window.inner_size();
+        let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
+        Pixels::new(screen_width, screen_height, surface_texture).unwrap()
+    };
+
+    event_loop.run(move |event, _, control_flow| {
+        // Draw the current frame
+        if let Event::RedrawRequested(_) = event {
+            //clear screen
+            draw(size as i32, screen_width as i32, &maze, pixels.get_frame());
+
+            if pixels
+                .render()
+                .map_err(|e| error!("pixels.render() failed: {}", e))
+                .is_err()
+            {
+                *control_flow = ControlFlow::Exit;
+                return;
+            }
+        }
+
+        // Handle input events
+        if input.update(&event) {
+            // Close events
+            if input.key_pressed(VirtualKeyCode::Escape) || input.quit() {
+                *control_flow = ControlFlow::Exit;
+                return;
+            }
+
+            // Resize the window
+            if let Some(size) = input.window_resized() {
+                pixels.resize_surface(size.width, size.height);
+            }
+
+            // Update internal state and request a redraw
+            maze.generate_step();
+
+            window.request_redraw();
+        }
+    });
 }
